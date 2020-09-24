@@ -7,6 +7,7 @@
 * [sysprop](sysprop.md)
 * [sysenv](sysenv.md)
 * [vmoption](vmoption.md)
+* [perfcounter](perfcounter.md)
 * [logger](logger.md)
 * [mbean](mbean.md)
 * [getstatic](getstatic.md)
@@ -32,6 +33,7 @@
 * [profiler](profiler.md)
 
 * [cat](cat.md)
+* [echo](echo.md)
 * [grep](grep.md)
 * [tee](tee.md)
 * [pwd](pwd.md)

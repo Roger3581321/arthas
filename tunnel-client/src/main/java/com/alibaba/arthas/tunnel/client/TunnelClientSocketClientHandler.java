@@ -2,8 +2,10 @@
 package com.alibaba.arthas.tunnel.client;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -12,11 +14,14 @@ import org.slf4j.LoggerFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.util.concurrent.DefaultThreadFactory;
 
 /**
  * 
@@ -26,7 +31,7 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 public class TunnelClientSocketClientHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
     private final static Logger logger = LoggerFactory.getLogger(TunnelClientSocketClientHandler.class);
 
-    private TunnelClient tunnelClient;
+    private final TunnelClient tunnelClient;
     private ChannelPromise registerPromise;
 
     public TunnelClientSocketClientHandler(TunnelClient tunnelClient) {
@@ -72,12 +77,15 @@ public class TunnelClientSocketClientHandler extends SimpleChannelInboundHandler
                 queryEncoder.addParam("clientConnectionId", parameters.get("clientConnectionId").get(0));
                 queryEncoder.addParam("id", parameters.get("id").get(0));
 
-                URI forwardUri = queryEncoder.toUri();
+                final URI forwardUri = queryEncoder.toUri();
 
                 logger.info("start ForwardClient, uri: {}", forwardUri);
-                ForwardClient forwardClient = new ForwardClient(forwardUri,
-                        new URI(this.tunnelClient.getLocalServerUrl()), tunnelClient.getEventLoopGroup());
-                forwardClient.start();
+                try {
+                    ForwardClient forwardClient = new ForwardClient(forwardUri);
+                    forwardClient.start();
+                } catch (Throwable e) {
+                    logger.error("start ForwardClient error, forwardUri: {}", forwardUri, e);
+                }
             }
 
         }
